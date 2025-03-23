@@ -27,7 +27,7 @@
 Обратите внимание, для того чтобы скачать спецификацию и тесты для следующих заданий, нужно подтянуть изменения из основного репозитория.
 Для этого:
 1. Замержите в свой main всю накопленную работу в своём форке и переключитесь на обновлённый main локально
-2. Если не настроен upstream, то сделайте ```git remote add upstream git@github.com:central-university-dev/2025-spring-go-course-lesson6.git``` или ```git remote add upstream https://github.com/central-university-dev/2025-spring-go-course-lesson6.git```
+2. Если не настроен upstream, то сделайте ```git remote add upstream git@github.com:central-university-dev/2025-go-course-lesson6-2025-spring-go-course-lesson6.git``` или ```git remote add upstream https://github.com/central-university-dev/2025-go-course-lesson6-2025-spring-go-course-lesson6.git```
 3. Обновите upstream: ```git fetch upstream``` или ```git fetch --all```
 4. Подтяните изменения из upstream и ребазируйтесь на них: ```git rebase upstream/main```
 
