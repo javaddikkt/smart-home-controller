@@ -131,9 +131,17 @@ func TestSensorRepository_GetSensors(t *testing.T) {
 		defer cancel()
 
 		r := rand.New(rand.NewPCG(42, 1024))
-		for i := 0; i < 10; i++ {
+		generated := map[string]bool{}
+		i := 0
+		for len(generated) < 10 {
+			sn := strconv.Itoa(r.IntN(10000000000))
+			if _, found := generated[sn]; found {
+				continue
+			}
+			generated[sn] = true
+			i++
 			sensor := &domain.Sensor{
-				SerialNumber: strconv.Itoa(r.IntN(1000000000)),
+				SerialNumber: sn,
 				Type:         domain.SensorTypeADC,
 				CurrentState: 0,
 				Description:  fmt.Sprintf("some description %d", i),
