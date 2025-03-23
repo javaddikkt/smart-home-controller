@@ -73,9 +73,17 @@ func TestSensorRepository_SaveSensor(t *testing.T) {
 
 		wg := sync.WaitGroup{}
 		r := rand.New(rand.NewPCG(42, 1024))
-		for i := 0; i < 1000; i++ {
+		generated := map[string]bool{}
+		i := 0
+		for len(generated) < 1000 {
+			sn := strconv.Itoa(r.IntN(10000000000))
+			if _, found := generated[sn]; found {
+				continue
+			}
+			generated[sn] = true
+			i++
 			sensor := &domain.Sensor{
-				SerialNumber: strconv.Itoa(r.IntN(1000000000)),
+				SerialNumber: sn,
 				Type:         domain.SensorTypeADC,
 				CurrentState: 0,
 				Description:  fmt.Sprintf("some description %d", i),
