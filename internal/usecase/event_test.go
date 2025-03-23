@@ -94,7 +94,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		sr := NewMockSensorRepository(ctrl)
 
-		sr.EXPECT().GetSensorBySerialNumber(ctx, "123").Times(1).Return(&domain.Sensor{
+		sr.EXPECT().GetSensorBySerialNumber(ctx, "0123456789").Times(1).Return(&domain.Sensor{
 			ID: 1,
 		}, nil)
 		sr.EXPECT().SaveSensor(ctx, gomock.Any()).Times(1).Do(func(_ context.Context, s *domain.Sensor) {
