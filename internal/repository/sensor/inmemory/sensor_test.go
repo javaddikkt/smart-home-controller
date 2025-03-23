@@ -45,7 +45,7 @@ func TestSensorRepository_SaveSensor(t *testing.T) {
 		defer cancel()
 
 		sensor := &domain.Sensor{
-			SerialNumber: "12345678",
+			SerialNumber: "0012345678",
 			Type:         domain.SensorTypeContactClosure,
 			CurrentState: 0,
 			Description:  "sensor description",
@@ -209,7 +209,7 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		defer cancel()
 
 		sensor := &domain.Sensor{
-			SerialNumber: "12345678",
+			SerialNumber: "0012345678",
 			Type:         domain.SensorTypeContactClosure,
 			CurrentState: 0,
 			Description:  "sensor description",
