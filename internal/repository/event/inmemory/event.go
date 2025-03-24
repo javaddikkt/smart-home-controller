@@ -2,23 +2,56 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 	"homework/internal/domain"
+	"sync"
 )
 
 type EventRepository struct {
-	// TODO добавьте реализацию
+	mu     sync.RWMutex
+	events map[int64]*domain.Event
 }
 
 func NewEventRepository() *EventRepository {
-	return &EventRepository{}
+	return &EventRepository{
+		events: make(map[int64]*domain.Event),
+	}
 }
 
 func (r *EventRepository) SaveEvent(ctx context.Context, event *domain.Event) error {
-	// TODO добавьте реализацию
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	if event == nil {
+		return fmt.Errorf("event is nil")
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	lastEvent, ok := r.events[event.SensorID]
+	if ok && lastEvent.Timestamp.After(event.Timestamp) {
+		return nil
+	}
+
+	r.events[event.SensorID] = event
+
 	return nil
 }
 
 func (r *EventRepository) GetLastEventBySensorID(ctx context.Context, id int64) (*domain.Event, error) {
-	// TODO добавьте реализацию
-	return nil, nil
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	event, ok := r.events[id]
+	if !ok {
+		return nil, fmt.Errorf("no events yet on sensor %d", id)
+	}
+
+	return event, nil
 }
