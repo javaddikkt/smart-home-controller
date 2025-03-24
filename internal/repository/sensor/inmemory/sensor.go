@@ -66,6 +66,9 @@ func (r *SensorRepository) GetSensors(ctx context.Context) ([]domain.Sensor, err
 	return sensors, nil
 }
 
+// GetSensorByID ; здесь непонятно зачем тесты требуют именно usecase.ErrSensorNotFound, потому что repository
+//
+//	становится зависим от usecase и это сильно нарушает принципы чистой архитектуры
 func (r *SensorRepository) GetSensorByID(ctx context.Context, id int64) (*domain.Sensor, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -82,6 +85,7 @@ func (r *SensorRepository) GetSensorByID(ctx context.Context, id int64) (*domain
 	return sensor, nil
 }
 
+// GetSensorBySerialNumber ; то же самое, что и с GetSensorByID
 func (r *SensorRepository) GetSensorBySerialNumber(ctx context.Context, sn string) (*domain.Sensor, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
