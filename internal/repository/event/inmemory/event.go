@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"homework/internal/domain"
+	"homework/internal/usecase"
 	"sync"
 )
 
@@ -44,14 +45,13 @@ func (r *EventRepository) GetLastEventBySensorID(ctx context.Context, id int64) 
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-
 	event, ok := r.events[id]
+	var myErr error
 	if !ok {
-		return nil, fmt.Errorf("no events yet on sensor %d", id)
+		// я не очень понимаю, почему тесты требуют именно usecase.ErrEventNotFound, это же противоречит принципам чистой архитектуры...
+		return nil, fmt.Errorf("no events yet on sensor %d: %w", id, usecase.ErrEventNotFound)
 	}
-
-	return event, nil
+	return event, myErr
 }
