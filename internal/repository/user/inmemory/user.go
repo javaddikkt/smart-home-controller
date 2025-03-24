@@ -19,6 +19,10 @@ func NewUserRepository() *UserRepository {
 }
 
 func (r *UserRepository) SaveUser(ctx context.Context, user *domain.User) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	if user == nil {
 		return fmt.Errorf("user is nil")
 	}
@@ -32,6 +36,10 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *domain.User) error 
 }
 
 func (r *UserRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
