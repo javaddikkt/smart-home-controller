@@ -18,6 +18,10 @@ func NewSensorOwnerRepository() *SensorOwnerRepository {
 }
 
 func (r *SensorOwnerRepository) SaveSensorOwner(ctx context.Context, sensorOwner domain.SensorOwner) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -33,6 +37,10 @@ func (r *SensorOwnerRepository) SaveSensorOwner(ctx context.Context, sensorOwner
 }
 
 func (r *SensorOwnerRepository) GetSensorsByUserID(ctx context.Context, userID int64) ([]domain.SensorOwner, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

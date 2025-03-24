@@ -20,22 +20,13 @@ func NewUser(ur UserRepository, sor SensorOwnerRepository, sr SensorRepository) 
 }
 
 func (u *User) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
+	if u.userRepo == nil {
+		return nil, ErrInvalidUserName
 	}
-
 	return user, u.userRepo.SaveUser(ctx, user)
 }
 
 func (u *User) AttachSensorToUser(ctx context.Context, userID, sensorID int64) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-
 	_, err := u.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
@@ -53,12 +44,6 @@ func (u *User) AttachSensorToUser(ctx context.Context, userID, sensorID int64) e
 }
 
 func (u *User) GetUserSensors(ctx context.Context, userID int64) ([]domain.Sensor, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-	}
-
 	_, err := u.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -71,7 +56,10 @@ func (u *User) GetUserSensors(ctx context.Context, userID int64) ([]domain.Senso
 
 	sensors := make([]domain.Sensor, 0, len(owners))
 	for _, owner := range owners {
-		sensor, _ := u.sensorRepo.GetSensorByID(ctx, owner.SensorID)
+		sensor, err := u.sensorRepo.GetSensorByID(ctx, owner.SensorID)
+		if err != nil {
+			return nil, err
+		}
 		sensors = append(sensors, *sensor)
 	}
 	return sensors, nil
