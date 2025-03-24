@@ -18,14 +18,8 @@ func NewEvent(er EventRepository, sr SensorRepository) *Event {
 }
 
 func (e *Event) ReceiveEvent(ctx context.Context, event *domain.Event) error {
-	if event == nil {
-		return ErrEventNotFound
-	}
 	if e.eventRepo == nil && e.sensorRepo == nil {
 		return ErrInvalidEventTimestamp
-	}
-	if e.sensorRepo == nil {
-		return ErrSensorNotFound
 	}
 
 	sensor, err := e.sensorRepo.GetSensorBySerialNumber(ctx, event.SensorSerialNumber)
@@ -34,18 +28,16 @@ func (e *Event) ReceiveEvent(ctx context.Context, event *domain.Event) error {
 	}
 
 	event.SensorID = sensor.ID
-	sensor.CurrentState = event.Payload
-	sensor.LastActivity = event.Timestamp
 
 	if err := e.eventRepo.SaveEvent(ctx, event); err != nil {
 		return err
 	}
 
-	if err := e.sensorRepo.SaveSensor(ctx, sensor); err != nil {
-		return err
-	}
+	sensor.CurrentState = event.Payload
+	sensor.LastActivity = event.Timestamp
+	sensor.IsActive = true
 
-	return nil
+	return e.sensorRepo.SaveSensor(ctx, sensor)
 }
 
 func (e *Event) GetLastEventBySensorID(ctx context.Context, id int64) (*domain.Event, error) {
