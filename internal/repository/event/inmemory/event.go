@@ -41,16 +41,18 @@ func (r *EventRepository) SaveEvent(ctx context.Context, event *domain.Event) er
 	return nil
 }
 
+// GetLastEventBySensorID ; то же самое про ошибку из usecase, что и в sensor.GetSensorByID
 func (r *EventRepository) GetLastEventBySensorID(ctx context.Context, id int64) (*domain.Event, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+
 	event, ok := r.events[id]
 	var myErr error
 	if !ok {
-		// я не очень понимаю, почему тесты требуют именно usecase.ErrEventNotFound, это же противоречит принципам чистой архитектуры...
 		return nil, fmt.Errorf("no events yet on sensor %d: %w", id, usecase.ErrEventNotFound)
 	}
 	return event, myErr
