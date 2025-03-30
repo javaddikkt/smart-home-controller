@@ -33,7 +33,7 @@ var useCases = UseCases{
 var router = gin.Default()
 
 func init() {
-	setupRouter(router, useCases, NewWebSocketHandler(useCases))
+	setupRouter(router, useCases)
 }
 
 // Все неизвестные пути должны возвращать http.StatusNotFound.
