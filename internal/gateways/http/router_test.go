@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"homework/internal/usecase"
-	"homework/pkg/pg_test"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,16 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	eventRepository "homework/internal/repository/event/postgres"
-	sensorRepository "homework/internal/repository/sensor/postgres"
-	userRepository "homework/internal/repository/user/postgres"
+	eventRepository "homework/internal/repository/event/inmemory"
+	sensorRepository "homework/internal/repository/sensor/inmemory"
+	userRepository "homework/internal/repository/user/inmemory"
 )
 
 var (
-	er  = &eventRepository.EventRepository{}
-	sr  = &sensorRepository.SensorRepository{}
-	ur  = &userRepository.UserRepository{}
-	sor = &userRepository.SensorOwnerRepository{}
+	er  = eventRepository.NewEventRepository()
+	sr  = sensorRepository.NewSensorRepository()
+	ur  = userRepository.NewUserRepository()
+	sor = userRepository.NewSensorOwnerRepository()
 )
 
 var useCases = UseCases{
@@ -34,15 +33,7 @@ var useCases = UseCases{
 var router = gin.Default()
 
 func init() {
-	testDB := pg_test.SetupTestDatabase()
-	testDbInstance := testDB.DbInstance
-
-	*er = *eventRepository.NewEventRepository(testDbInstance)
-	*sr = *sensorRepository.NewSensorRepository(testDbInstance)
-	*ur = *userRepository.NewUserRepository(testDbInstance)
-	*sor = *userRepository.NewSensorOwnerRepository(testDbInstance)
-
-	setupRouter(router, useCases, NewWebSocketHandler(useCases))
+	setupRouter(router, useCases)
 }
 
 // Все неизвестные пути должны возвращать http.StatusNotFound.
