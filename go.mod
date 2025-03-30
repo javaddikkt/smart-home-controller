@@ -3,7 +3,6 @@ module homework
 go 1.23
 
 require (
-	github.com/coder/websocket v1.8.13
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang/mock v1.6.0
 )
