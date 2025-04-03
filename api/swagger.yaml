@@ -4,7 +4,7 @@ info:
   description: Интерфейс управления и мониторинга устройствами умного дома
   version: "0.1"
 host: "localhost:8080"
-basePath: "/api"
+basePath: "/"
 schemes: ["http"]
 tags:
   - name: events
