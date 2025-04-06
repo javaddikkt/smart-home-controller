@@ -47,7 +47,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		sr := NewMockSensorRepository(ctrl)
 
-		sr.EXPECT().GetSensorBySerialNumber(ctx, "123").Times(1).Return(&domain.Sensor{
+		sr.EXPECT().GetSensorBySerialNumber(ctx, "0123456789").Times(1).Return(&domain.Sensor{
 			ID: 1,
 		}, nil)
 
@@ -59,7 +59,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		err := e.ReceiveEvent(ctx, &domain.Event{
 			Timestamp:          time.Now(),
-			SensorSerialNumber: "123",
+			SensorSerialNumber: "0123456789",
 		})
 		assert.ErrorIs(t, err, expectedError)
 	})
@@ -70,7 +70,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		sr := NewMockSensorRepository(ctrl)
 
-		sr.EXPECT().GetSensorBySerialNumber(ctx, "123").Times(1).Return(&domain.Sensor{
+		sr.EXPECT().GetSensorBySerialNumber(ctx, "0123456789").Times(1).Return(&domain.Sensor{
 			ID: 1,
 		}, nil)
 		expectedError := errors.New("some error")
@@ -83,7 +83,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		err := e.ReceiveEvent(ctx, &domain.Event{
 			Timestamp:          time.Now(),
-			SensorSerialNumber: "123",
+			SensorSerialNumber: "0123456789",
 		})
 		assert.ErrorIs(t, err, expectedError)
 	})
@@ -94,7 +94,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 
 		sr := NewMockSensorRepository(ctrl)
 
-		sr.EXPECT().GetSensorBySerialNumber(ctx, "123").Times(1).Return(&domain.Sensor{
+		sr.EXPECT().GetSensorBySerialNumber(ctx, "0123456789").Times(1).Return(&domain.Sensor{
 			ID: 1,
 		}, nil)
 		sr.EXPECT().SaveSensor(ctx, gomock.Any()).Times(1).Do(func(_ context.Context, s *domain.Sensor) {
@@ -105,7 +105,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 		er := NewMockEventRepository(ctrl)
 		er.EXPECT().SaveEvent(ctx, gomock.Any()).Times(1).DoAndReturn(func(_ context.Context, event *domain.Event) error {
 			assert.Equal(t, int64(1), event.SensorID)
-			assert.Equal(t, "123", event.SensorSerialNumber)
+			assert.Equal(t, "0123456789", event.SensorSerialNumber)
 
 			return nil
 		})
@@ -113,7 +113,7 @@ func Test_event_ReceiveEvent(t *testing.T) {
 		e := NewEvent(er, sr)
 		err := e.ReceiveEvent(ctx, &domain.Event{
 			Timestamp:          time.Now(),
-			SensorSerialNumber: "123",
+			SensorSerialNumber: "0123456789",
 			Payload:            8,
 		})
 		assert.NoError(t, err)

@@ -6,10 +6,11 @@ import (
 	"homework/internal/domain"
 	"homework/internal/usecase"
 	"math/rand/v2"
-	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+	"unicode"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -45,7 +46,7 @@ func TestSensorRepository_SaveSensor(t *testing.T) {
 		defer cancel()
 
 		sensor := &domain.Sensor{
-			SerialNumber: "12345678",
+			SerialNumber: "0012345678",
 			Type:         domain.SensorTypeContactClosure,
 			CurrentState: 0,
 			Description:  "sensor description",
@@ -72,10 +73,17 @@ func TestSensorRepository_SaveSensor(t *testing.T) {
 		defer cancel()
 
 		wg := sync.WaitGroup{}
-		r := rand.New(rand.NewPCG(42, 1024))
-		for i := 0; i < 1000; i++ {
+		generated := map[string]bool{}
+		i := 0
+		for len(generated) < 1000 {
+			sn := generateRandomNumbersString()
+			if _, found := generated[sn]; found {
+				continue
+			}
+			generated[sn] = true
+			i++
 			sensor := &domain.Sensor{
-				SerialNumber: strconv.Itoa(r.IntN(1000000000)),
+				SerialNumber: sn,
 				Type:         domain.SensorTypeADC,
 				CurrentState: 0,
 				Description:  fmt.Sprintf("some description %d", i),
@@ -130,10 +138,17 @@ func TestSensorRepository_GetSensors(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		r := rand.New(rand.NewPCG(42, 1024))
-		for i := 0; i < 10; i++ {
+		generated := map[string]bool{}
+		i := 0
+		for len(generated) < 10 {
+			sn := generateRandomNumbersString()
+			if _, found := generated[sn]; found {
+				continue
+			}
+			generated[sn] = true
+			i++
 			sensor := &domain.Sensor{
-				SerialNumber: strconv.Itoa(r.IntN(1000000000)),
+				SerialNumber: sn,
 				Type:         domain.SensorTypeADC,
 				CurrentState: 0,
 				Description:  fmt.Sprintf("some description %d", i),
@@ -181,7 +196,7 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
-		_, err := sr.GetSensorBySerialNumber(ctx, "1234")
+		_, err := sr.GetSensorBySerialNumber(ctx, "0123456789")
 		assert.ErrorIs(t, err, context.Canceled)
 	})
 
@@ -190,7 +205,7 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
 		defer cancel()
 
-		_, err := sr.GetSensorBySerialNumber(ctx, "12345")
+		_, err := sr.GetSensorBySerialNumber(ctx, "0123456789")
 		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 
@@ -199,7 +214,7 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		_, err := sr.GetSensorBySerialNumber(ctx, "12345")
+		_, err := sr.GetSensorBySerialNumber(ctx, "0123456789")
 		assert.ErrorIs(t, err, usecase.ErrSensorNotFound)
 	})
 
@@ -209,7 +224,7 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		defer cancel()
 
 		sensor := &domain.Sensor{
-			SerialNumber: "12345678",
+			SerialNumber: "0012345678",
 			Type:         domain.SensorTypeContactClosure,
 			CurrentState: 0,
 			Description:  "sensor description",
@@ -229,4 +244,29 @@ func TestSensorRepository_GetSensorBySerialNumber(t *testing.T) {
 		assert.NotEmpty(t, actualSensor.RegisteredAt)
 		assert.Empty(t, actualSensor.LastActivity)
 	})
+}
+
+func generateRandomNumbersString() string {
+	r := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 1024))
+
+	digits := make([]string, 10)
+	for i := 0; i < 10; i++ {
+		digits = append(digits, fmt.Sprintf("%d", r.IntN(10)))
+	}
+	return strings.Join(digits, "")
+}
+
+func TestGenerateRandomNumbersString(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		sn := generateRandomNumbersString()
+		if len(sn) != 10 {
+			t.Errorf("expected 10 digins in the string, got: %d", len(sn))
+		}
+		for _, char := range sn {
+			if !unicode.IsDigit(char) {
+				t.Errorf("expected digits in the string, got: %s", sn)
+				break
+			}
+		}
+	}
 }

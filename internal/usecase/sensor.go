@@ -2,28 +2,47 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"homework/internal/domain"
 )
 
 type Sensor struct {
-	// TODO добавьте реализацию
+	sensorRepo SensorRepository
 }
 
 func NewSensor(sr SensorRepository) *Sensor {
-	return &Sensor{}
+	return &Sensor{
+		sensorRepo: sr,
+	}
 }
 
+// RegisterSensor ; не очень понятно, зачем здесь тесты требуют проверять серийный номер и тип, не залезая
+//
+//	в repository, получается без копипасты никак
 func (s *Sensor) RegisterSensor(ctx context.Context, sensor *domain.Sensor) (*domain.Sensor, error) {
-	// TODO добавьте реализацию
-	return nil, nil
+	if len(sensor.SerialNumber) != 10 {
+		return nil, ErrWrongSensorSerialNumber
+	}
+	if sensor.Type != domain.SensorTypeContactClosure && sensor.Type != domain.SensorTypeADC {
+		return nil, ErrWrongSensorType
+	}
+
+	currSensor, err := s.sensorRepo.GetSensorBySerialNumber(ctx, sensor.SerialNumber)
+	if err == nil || !errors.Is(err, ErrSensorNotFound) {
+		return currSensor, err
+	}
+
+	return sensor, s.sensorRepo.SaveSensor(ctx, sensor)
 }
 
 func (s *Sensor) GetSensors(ctx context.Context) ([]domain.Sensor, error) {
-	// TODO добавьте реализацию
-	return nil, nil
+	sensors, err := s.sensorRepo.GetSensors(ctx)
+
+	return sensors, err
 }
 
 func (s *Sensor) GetSensorByID(ctx context.Context, id int64) (*domain.Sensor, error) {
-	// TODO добавьте реализацию
-	return nil, nil
+	sensor, err := s.sensorRepo.GetSensorByID(ctx, id)
+
+	return sensor, err
 }

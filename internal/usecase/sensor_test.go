@@ -238,7 +238,7 @@ func Test_sensor_GetSensorByID(t *testing.T) {
 		sr := NewMockSensorRepository(ctrl)
 		sr.EXPECT().GetSensorByID(ctx, gomock.Any()).Times(1).Return(&domain.Sensor{
 			ID:           1,
-			SerialNumber: "12345",
+			SerialNumber: "0123456789",
 			Type:         domain.SensorTypeADC,
 			CurrentState: 255,
 			Description:  "some desc",

@@ -43,7 +43,7 @@ func TestEventRepository_SaveEvent(t *testing.T) {
 
 		event := &domain.Event{
 			Timestamp:          time.Now(),
-			SensorSerialNumber: "12345",
+			SensorSerialNumber: "0123456789",
 			Payload:            0,
 		}
 
@@ -68,7 +68,7 @@ func TestEventRepository_SaveEvent(t *testing.T) {
 		for i := 0; i < 1000; i++ {
 			event := &domain.Event{
 				Timestamp:          time.Now(),
-				SensorSerialNumber: "12345",
+				SensorSerialNumber: "0123456789",
 				Payload:            0,
 			}
 			lastEvent = *event
