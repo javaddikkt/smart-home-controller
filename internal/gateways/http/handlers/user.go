@@ -51,10 +51,8 @@ func CreateUserHandler(u types.UseCases) gin.HandlerFunc {
 
 func BindSensorHandler(u types.UseCases) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userIdStr := c.Param("user_id")
-		userId, err := strconv.ParseInt(userIdStr, 10, 64)
-		if err != nil || userId <= 0 {
-			c.JSON(http.StatusBadRequest, models.Error{Reason: swag.String("incorrect user_id")})
+		userId, err := parseUserId(c)
+		if err != nil {
 			return
 		}
 
@@ -83,17 +81,26 @@ func BindSensorHandler(u types.UseCases) gin.HandlerFunc {
 	}
 }
 
+func GetSensorsByUserHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensorsByUser(c, u, true)
+	}
+}
+
+func HeadSensorsByUserHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensorsByUser(c, u, false)
+	}
+}
+
 func sensorsByUser(c *gin.Context, u types.UseCases, withBody bool) {
-	userIdStr := c.Param("user_id")
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
-	if err != nil || userId <= 0 {
-		c.JSON(http.StatusUnprocessableEntity, models.Error{Reason: swag.String("incorrect user_id")})
+	userId, err := parseUserId(c)
+	if err != nil {
 		return
 	}
 
 	sensors, err := u.User.GetUserSensors(c.Request.Context(), userId)
 	if err != nil {
-		fmt.Println(">>>" + err.Error() + "<<<")
 		c.JSON(http.StatusNotFound, models.Error{Reason: swag.String(err.Error())})
 		return
 	}
@@ -112,14 +119,12 @@ func sensorsByUser(c *gin.Context, u types.UseCases, withBody bool) {
 	}
 }
 
-func GetSensorsByUserHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensorsByUser(c, u, true)
+func parseUserId(c *gin.Context) (int64, error) {
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil || userId <= 0 {
+		c.JSON(http.StatusUnprocessableEntity, models.Error{Reason: swag.String("incorrect user_id")})
+		return -1, fmt.Errorf("incorrect user_id")
 	}
-}
-
-func HeadSensorsByUserHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensorsByUser(c, u, false)
-	}
+	return userId, nil
 }
