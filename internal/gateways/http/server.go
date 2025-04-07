@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	"homework/internal/usecase"
+	"homework/internal/gateways/http/types"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,13 +13,7 @@ type Server struct {
 	router *gin.Engine
 }
 
-type UseCases struct {
-	Event  *usecase.Event
-	Sensor *usecase.Sensor
-	User   *usecase.User
-}
-
-func NewServer(useCases UseCases, options ...func(*Server)) *Server {
+func NewServer(useCases types.UseCases, options ...func(*Server)) *Server {
 	r := gin.Default()
 	setupRouter(r, useCases)
 
