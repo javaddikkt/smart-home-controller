@@ -22,20 +22,21 @@ func setupRouter(r *gin.Engine, u types.UseCases) {
 	r.POST("/events", RequireJSONContentType(), handlers.CreateEventHandler(u))
 	r.OPTIONS("/events", optionsHandler([]string{"POST", "OPTIONS"}))
 
-	r.POST("/sensors", RequireJSONContentType(), handlers.CreateSensorHandler(u))
 	r.GET("/sensors", RequireJSONAccept(), handlers.GetSensorsHandler(u))
-	r.GET("/sensors/:sensor_id", RequireJSONAccept(), handlers.GetSensorByIdHandler(u))
 	r.HEAD("/sensors", RequireJSONAccept(), handlers.HeadSensorsHandler(u))
-	r.HEAD("/sensors/:sensor_id", RequireJSONAccept(), handlers.HeadSensorByIdHandler(u))
+	r.POST("/sensors", RequireJSONContentType(), handlers.CreateSensorHandler(u))
 	r.OPTIONS("/sensors", optionsHandler([]string{"GET", "HEAD", "POST", "OPTIONS"}))
+
+	r.GET("/sensors/:sensor_id", RequireJSONAccept(), handlers.GetSensorByIdHandler(u))
+	r.HEAD("/sensors/:sensor_id", RequireJSONAccept(), handlers.HeadSensorByIdHandler(u))
 	r.OPTIONS("/sensors/:sensor_id", optionsHandler([]string{"GET", "HEAD", "OPTIONS"}))
 
 	r.POST("/users", RequireJSONContentType(), handlers.CreateUserHandler(u))
+	r.OPTIONS("/users", optionsHandler([]string{"POST", "OPTIONS"}))
 
-	r.POST("/users/:user_id/sensors", RequireJSONContentType(), handlers.BindSensorHandler(u))
 	r.GET("/users/:user_id/sensors", RequireJSONAccept(), handlers.GetSensorsByUserHandler(u))
 	r.HEAD("/users/:user_id/sensors", RequireJSONAccept(), handlers.HeadSensorsByUserHandler(u))
-	r.OPTIONS("/users", optionsHandler([]string{"POST", "OPTIONS"}))
+	r.POST("/users/:user_id/sensors", RequireJSONContentType(), handlers.BindSensorHandler(u))
 	r.OPTIONS("/users/:user_id/sensors", optionsHandler([]string{"GET", "HEAD", "POST", "OPTIONS"}))
 }
 

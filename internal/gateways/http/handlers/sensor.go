@@ -51,6 +51,30 @@ func CreateSensorHandler(u types.UseCases) gin.HandlerFunc {
 	}
 }
 
+func GetSensorsHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensors(c, u, true)
+	}
+}
+
+func HeadSensorsHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensors(c, u, false)
+	}
+}
+
+func GetSensorByIdHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensorByID(c, u, true)
+	}
+}
+
+func HeadSensorByIdHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensorByID(c, u, false)
+	}
+}
+
 func sensors(c *gin.Context, u types.UseCases, withBody bool) {
 	sensors, err := u.Sensor.GetSensors(c.Request.Context())
 	if err != nil {
@@ -69,18 +93,6 @@ func sensors(c *gin.Context, u types.UseCases, withBody bool) {
 	} else {
 		c.Header("Content-Length", "0")
 		c.Status(http.StatusOK)
-	}
-}
-
-func GetSensorsHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensors(c, u, true)
-	}
-}
-
-func HeadSensorsHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensors(c, u, false)
 	}
 }
 
@@ -107,18 +119,6 @@ func sensorByID(c *gin.Context, u types.UseCases, withBody bool) {
 	} else {
 		c.Header("Content-Length", "0")
 		c.Status(http.StatusOK)
-	}
-}
-
-func GetSensorByIdHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensorByID(c, u, true)
-	}
-}
-
-func HeadSensorByIdHandler(u types.UseCases) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sensorByID(c, u, false)
 	}
 }
 
