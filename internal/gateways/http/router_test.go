@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"homework/internal/gateways/http/types"
 	"homework/internal/usecase"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +25,7 @@ var (
 	sor = userRepository.NewSensorOwnerRepository()
 )
 
-var useCases = UseCases{
+var useCases = types.UseCases{
 	Event:  usecase.NewEvent(er, sr),
 	Sensor: usecase.NewSensor(sr),
 	User:   usecase.NewUser(ur, sor, sr),
