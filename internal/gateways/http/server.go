@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"homework/internal/gateways/http/types"
 
@@ -15,7 +16,7 @@ type Server struct {
 
 func NewServer(useCases types.UseCases, options ...func(*Server)) *Server {
 	r := gin.Default()
-	setupRouter(r, useCases)
+	setupRouter(r, useCases, NewWebSocketHandler(useCases))
 
 	s := &Server{router: r, host: "localhost", port: 8080}
 	for _, o := range options {
@@ -37,6 +38,6 @@ func WithPort(port uint16) func(*Server) {
 	}
 }
 
-func (s *Server) Run() error {
+func (s *Server) Run(ctx context.Context) error {
 	return s.router.Run(fmt.Sprintf("%s:%d", s.host, s.port))
 }

@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/swag v0.23.1
 	github.com/go-openapi/validate v0.24.0
 	github.com/golang/mock v1.6.0
+	nhooyr.io/websocket v1.8.17
 )
 
 require (
