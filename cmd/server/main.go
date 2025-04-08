@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	httpGatewayModels "homework/internal/gateways/http/types"
 	"homework/internal/usecase"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 
 	httpGateway "homework/internal/gateways/http"
@@ -16,6 +18,9 @@ import (
 )
 
 func main() {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
 	er := eventRepository.NewEventRepository()
 	sr := sensorRepository.NewSensorRepository()
 	ur := userRepository.NewUserRepository()
@@ -40,9 +45,10 @@ func main() {
 		log.Fatal("port must be between 1 and 65535")
 	}
 
+
 	r := httpGateway.NewServer(useCases, httpGateway.WithHost(host), httpGateway.WithPort(uint16(portInt)))
 
-	if err := r.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := r.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Printf("error during server shutdown: %v", err)
 	}
 }
