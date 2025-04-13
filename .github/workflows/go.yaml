@@ -8,14 +8,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: edu-self-hosted
+    timeout-minutes: 10
+    container:
+      image: golang:1.23-bookworm
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23.0'
 
       - name: Build
         run: |
@@ -26,6 +24,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.64.8
+          output-format: colored-line-number
 
       - name: Test
         run: |

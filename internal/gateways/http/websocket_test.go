@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"nhooyr.io/websocket"
+	"github.com/coder/websocket"
 )
 
 type testSuite struct {
