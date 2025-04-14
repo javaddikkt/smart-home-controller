@@ -45,7 +45,6 @@ func main() {
 		log.Fatal("port must be between 1 and 65535")
 	}
 
-
 	r := httpGateway.NewServer(useCases, httpGateway.WithHost(host), httpGateway.WithPort(uint16(portInt)))
 
 	if err := r.Run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
