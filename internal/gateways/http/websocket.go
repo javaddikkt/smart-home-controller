@@ -82,7 +82,7 @@ func (h *WebSocketHandler) Handle(c *gin.Context, conn *websocket.Conn, sensorID
 	for {
 		select {
 		case <-ctx.Done():
-			conn.Close(websocket.StatusNormalClosure, "")
+			_ = conn.Close(websocket.StatusNormalClosure, "")
 			return
 		case <-ticker.C:
 			event, err := h.useCases.Event.GetLastEventBySensorID(ctx, sensorID)
@@ -93,7 +93,7 @@ func (h *WebSocketHandler) Handle(c *gin.Context, conn *websocket.Conn, sensorID
 				continue
 			}
 			if err := wsjson.Write(ctx, conn, event); err != nil {
-				conn.Close(websocket.StatusInternalError, "")
+				_ = conn.Close(websocket.StatusInternalError, "")
 				return
 			}
 		}
@@ -104,7 +104,7 @@ func (h *WebSocketHandler) Shutdown() error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for conn := range h.connections {
-		conn.Close(websocket.StatusNormalClosure, "")
+		_ = conn.Close(websocket.StatusNormalClosure, "")
 	}
 	return nil
 }
