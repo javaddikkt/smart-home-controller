@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"homework/internal/domain"
+	"homework/internal/gateways/http/types"
 	"homework/internal/usecase"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +41,7 @@ func (t *testSuite) TestWebSocketConnection() {
 	urMock := usecase.NewMockUserRepository(t.ctrl)
 	sorMock := usecase.NewMockSensorOwnerRepository(t.ctrl)
 
-	uc := UseCases{
+	uc := types.UseCases{
 		Event:  usecase.NewEvent(erMock, srMock),
 		Sensor: usecase.NewSensor(srMock),
 		User:   usecase.NewUser(urMock, sorMock, srMock),
@@ -78,7 +79,7 @@ func (t *testSuite) TestWebSocketConnectionFail() {
 	urMock := usecase.NewMockUserRepository(t.ctrl)
 	sorMock := usecase.NewMockSensorOwnerRepository(t.ctrl)
 
-	uc := UseCases{
+	uc := types.UseCases{
 		Event:  usecase.NewEvent(erMock, srMock),
 		Sensor: usecase.NewSensor(srMock),
 		User:   usecase.NewUser(urMock, sorMock, srMock),
@@ -108,7 +109,7 @@ func (t *testSuite) TestWebSocketShutdown_Server() {
 	urMock := usecase.NewMockUserRepository(t.ctrl)
 	sorMock := usecase.NewMockSensorOwnerRepository(t.ctrl)
 
-	uc := UseCases{
+	uc := types.UseCases{
 		Event:  usecase.NewEvent(erMock, srMock),
 		Sensor: usecase.NewSensor(srMock),
 		User:   usecase.NewUser(urMock, sorMock, srMock),
@@ -144,7 +145,7 @@ func (t *testSuite) TestWebSocketShutdown_Client() {
 	urMock := usecase.NewMockUserRepository(t.ctrl)
 	sorMock := usecase.NewMockSensorOwnerRepository(t.ctrl)
 
-	uc := UseCases{
+	uc := types.UseCases{
 		Event:  usecase.NewEvent(erMock, srMock),
 		Sensor: usecase.NewSensor(srMock),
 		User:   usecase.NewUser(urMock, sorMock, srMock),

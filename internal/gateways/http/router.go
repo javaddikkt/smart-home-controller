@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupRouter(r *gin.Engine, u types.UseCases) {
+func setupRouter(r *gin.Engine, u types.UseCases, ws *WebSocketHandler) {
 	r.HandleMethodNotAllowed = true
 	r.NoMethod(func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusMethodNotAllowed)
@@ -26,6 +26,8 @@ func setupRouter(r *gin.Engine, u types.UseCases) {
 	r.HEAD("/sensors", RequireJSONAccept(), handlers.HeadSensorsHandler(u))
 	r.POST("/sensors", RequireJSONContentType(), handlers.CreateSensorHandler(u))
 	r.OPTIONS("/sensors", optionsHandler([]string{"GET", "HEAD", "POST", "OPTIONS"}))
+
+	r.GET("/sensors/:sensor_id/events", ws.HandleEvents)
 
 	r.GET("/sensors/:sensor_id", RequireJSONAccept(), handlers.GetSensorByIdHandler(u))
 	r.HEAD("/sensors/:sensor_id", RequireJSONAccept(), handlers.HeadSensorByIdHandler(u))
