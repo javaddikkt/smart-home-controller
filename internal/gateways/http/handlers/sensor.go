@@ -75,6 +75,53 @@ func HeadSensorByIdHandler(u types.UseCases) gin.HandlerFunc {
 	}
 }
 
+func GetSensorHistoryHandler(u types.UseCases) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sensorIDStr := c.Param("sensor_id")
+		sensorID, err := strconv.ParseInt(sensorIDStr, 10, 64)
+		if err != nil || sensorID <= 0 {
+			c.JSON(http.StatusUnprocessableEntity, models.Error{
+				Reason: swag.String("invalid sensor_id"),
+			})
+			return
+		}
+
+		startDateStr := c.Query("start_date")
+		startDate, err := time.Parse(time.RFC3339, startDateStr)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, models.Error{
+				Reason: swag.String("invalid start_date"),
+			})
+		}
+
+		endDateStr := c.Query("end_date")
+		endDate, err := time.Parse(time.RFC3339, endDateStr)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, models.Error{
+				Reason: swag.String("invalid end_date"),
+			})
+		}
+
+		events, err := u.Event.GetEventsInRangeBySensorID(c.Request.Context(), sensorID, startDate, endDate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, models.Error{
+				Reason: swag.String(err.Error()),
+			})
+		}
+
+		resp := make([]*models.SensorHistoryItem, 0, len(events))
+		for _, e := range events {
+			item := &models.SensorHistoryItem{
+				Payload:   e.Payload,
+				Timestamp: strfmt.DateTime(e.Timestamp),
+			}
+			resp = append(resp, item)
+		}
+
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
 func sensors(c *gin.Context, u types.UseCases, withBody bool) {
 	sensors, err := u.Sensor.GetSensors(c.Request.Context())
 	if err != nil {

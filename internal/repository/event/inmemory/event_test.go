@@ -149,3 +149,46 @@ func TestEventRepository_GetLastEventBySensorID(t *testing.T) {
 		assert.Equal(t, lastEvent.Payload, actualEvent.Payload)
 	})
 }
+
+func TestEventRepository_GetEventsInRangeBySensorID(t *testing.T) {
+	t.Run("fail, ctx cancelled", func(t *testing.T) {
+		er := NewEventRepository()
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		_, err := er.GetEventsInRangeBySensorID(ctx, 0, time.Now(), time.Now())
+		assert.ErrorIs(t, err, context.Canceled)
+	})
+
+	t.Run("fail, sensor not found", func(t *testing.T) {
+		er := NewEventRepository()
+		ctx := context.Background()
+
+		_, err := er.GetEventsInRangeBySensorID(ctx, 123, time.Now(), time.Now())
+		assert.ErrorIs(t, err, usecase.ErrEventNotFound)
+	})
+
+	t.Run("ok, return correct slice", func(t *testing.T) {
+		er := NewEventRepository()
+		ctx := context.Background()
+
+		sensorID := int64(1)
+		now := time.Now()
+
+		events := []*domain.Event{
+			{SensorID: sensorID, Timestamp: now.Add(-10 * time.Minute), Payload: 1},
+			{SensorID: sensorID, Timestamp: now.Add(-5 * time.Minute), Payload: 2},
+			{SensorID: sensorID, Timestamp: now, Payload: 3},
+		}
+
+		for _, event := range events {
+			assert.NoError(t, er.SaveEvent(ctx, event))
+		}
+
+		got, err := er.GetEventsInRangeBySensorID(ctx, sensorID, now.Add(-7*time.Minute), now.Add(1*time.Minute))
+		assert.NoError(t, err)
+		assert.Len(t, got, 2)
+		assert.Equal(t, events[1].Payload, got[0].Payload)
+		assert.Equal(t, events[2].Payload, got[1].Payload)
+	})
+}

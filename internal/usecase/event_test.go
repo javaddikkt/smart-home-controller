@@ -119,3 +119,44 @@ func Test_event_ReceiveEvent(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestEvent_GetEventsInRangeBySensorID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("ok, events found", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := NewMockEventRepository(ctrl)
+
+		now := time.Now()
+		expected := []*domain.Event{
+			{Timestamp: now, Payload: 42},
+		}
+
+		mockRepo.EXPECT().
+			GetEventsInRangeBySensorID(ctx, int64(1), gomock.Any(), gomock.Any()).
+			Return(expected, nil).
+			Times(1)
+
+		e := NewEvent(mockRepo, nil)
+
+		result, err := e.GetEventsInRangeBySensorID(ctx, 1, now.Add(-time.Hour), now.Add(time.Hour))
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("error from repo", func(t *testing.T) {
+		ctx := context.Background()
+		mockRepo := NewMockEventRepository(ctrl)
+
+		mockRepo.EXPECT().
+			GetEventsInRangeBySensorID(ctx, int64(2), gomock.Any(), gomock.Any()).
+			Return(nil, ErrEventNotFound).
+			Times(1)
+
+		e := NewEvent(mockRepo, nil)
+
+		_, err := e.GetEventsInRangeBySensorID(ctx, 2, time.Now(), time.Now())
+		assert.ErrorIs(t, err, ErrEventNotFound)
+	})
+}
