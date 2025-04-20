@@ -33,6 +33,8 @@ func setupRouter(r *gin.Engine, u types.UseCases, ws *WebSocketHandler) {
 	r.HEAD("/sensors/:sensor_id", RequireJSONAccept(), handlers.HeadSensorByIdHandler(u))
 	r.OPTIONS("/sensors/:sensor_id", optionsHandler([]string{"GET", "HEAD", "OPTIONS"}))
 
+	r.GET("/sensors/:sensor_id/history", RequireJSONAccept(), handlers.GetSensorHistoryHandler(u))
+
 	r.POST("/users", RequireJSONContentType(), handlers.CreateUserHandler(u))
 	r.OPTIONS("/users", optionsHandler([]string{"POST", "OPTIONS"}))
 

@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -732,5 +733,52 @@ func TestEventsRoutes(t *testing.T) {
 				// assert.Contains(t, allowed, http.MethodPost, "В разрешённых методах нет POST")
 			})
 		}
+	})
+}
+
+func TestGetSensorHistory(t *testing.T) {
+	t.Run("valid_request_200", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		now := time.Now().UTC()
+		start := now.Add(-1 * time.Hour).Format(time.RFC3339)
+		end := now.Add(1 * time.Hour).Format(time.RFC3339)
+
+		req, _ := http.NewRequest(http.MethodGet, "/sensors/1/history?start_date="+start+"&end_date="+end, nil)
+		req.Header.Add("Accept", "application/json")
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code, "Получили не 200")
+		assert.True(t, json.Valid(w.Body.Bytes()), "В ответе не валидный JSON")
+	})
+
+	t.Run("invalid_sensor_id_422", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodGet, "/sensors/abc/history?start_date=2023-01-01T00:00:00Z&end_date=2023-01-01T01:00:00Z", nil)
+		req.Header.Add("Accept", "application/json")
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "Ожидалось 422 при некорректном sensor_id")
+	})
+
+	t.Run("invalid_start_date_422", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodGet, "/sensors/1/history?start_date=invalid&end_date=2023-01-01T01:00:00Z", nil)
+		req.Header.Add("Accept", "application/json")
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "Ожидалось 422 при некорректном start_date")
+	})
+
+	t.Run("invalid_end_date_422", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest(http.MethodGet, "/sensors/1/history?start_date=2023-01-01T00:00:00Z&end_date=invalid", nil)
+		req.Header.Add("Accept", "application/json")
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "Ожидалось 422 при некорректном end_date")
 	})
 }

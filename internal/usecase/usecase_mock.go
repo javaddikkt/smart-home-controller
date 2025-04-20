@@ -8,6 +8,7 @@ import (
 	context "context"
 	domain "homework/internal/domain"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -115,6 +116,21 @@ func NewMockEventRepository(ctrl *gomock.Controller) *MockEventRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockEventRepository) EXPECT() *MockEventRepositoryMockRecorder {
 	return m.recorder
+}
+
+// GetEventsInRangeBySensorID mocks base method.
+func (m *MockEventRepository) GetEventsInRangeBySensorID(ctx context.Context, id int64, from, to time.Time) ([]*domain.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEventsInRangeBySensorID", ctx, id, from, to)
+	ret0, _ := ret[0].([]*domain.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEventsInRangeBySensorID indicates an expected call of GetEventsInRangeBySensorID.
+func (mr *MockEventRepositoryMockRecorder) GetEventsInRangeBySensorID(ctx, id, from, to interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventsInRangeBySensorID", reflect.TypeOf((*MockEventRepository)(nil).GetEventsInRangeBySensorID), ctx, id, from, to)
 }
 
 // GetLastEventBySensorID mocks base method.
