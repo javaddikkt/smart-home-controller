@@ -27,13 +27,23 @@ jobs:
           go build -v ./...
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v5
         with:
           version: v1.64.8
-          output-format: colored-line-number
+          args: --out-format=colored-line-number
+
+      - name: Fuzzing test
+        run: |
+          go list ./... | grep -vE '(test|scripts|cmd|mock|gen)' | xargs -I{} go test -fuzz=Fuzz -fuzztime=10s {}
 
       - name: Test
         env:
           CGO_ENABLED: 1
         run: |
-          go test -v -race -coverpkg=./... ./...
+          go test -v -race -coverprofile=./cover.out -covermode=atomic -coverpkg=$(go list ./... | grep -vE '(test|scripts|cmd|mock|gen)' | tr '\n' ',') ./...
+
+      - name: Check coverage
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          profile: cover.out
+          threshold-total: 80
