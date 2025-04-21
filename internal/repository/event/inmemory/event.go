@@ -91,9 +91,6 @@ func (r *EventRepository) GetEventsInRangeBySensorID(ctx context.Context, id int
 	end := sort.Search(len(events)-1, func(i int) bool {
 		return (events)[i].Timestamp.After(to)
 	}) + 1
-	if end > len(events) {
-		end = len(events)
-	}
 
 	return (events)[start:end], nil
 }
