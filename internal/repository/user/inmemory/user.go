@@ -35,11 +35,7 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *domain.User) error 
 	return nil
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-
+func (r *UserRepository) GetUserByID(_ context.Context, id int64) (*domain.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

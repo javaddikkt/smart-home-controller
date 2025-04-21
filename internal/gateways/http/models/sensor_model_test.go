@@ -22,55 +22,31 @@ func TestSensor_Validate(t *testing.T) {
 		LastActivity: &now,
 	}
 
-	t.Run("valid sensor", func(t *testing.T) {
-		err := validSensor.Validate(strfmt.Default)
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-		}
-	})
+	tests := []struct {
+		name    string
+		mutate  func(s *Sensor)
+		wantErr bool
+	}{
+		{"valid sensor", func(_ *Sensor) {}, false},
+		{"missing serial number", func(s *Sensor) { s.SerialNumber = nil }, true},
+		{"invalid serial number format", func(s *Sensor) { s.SerialNumber = swag.String("abcd") }, true},
+		{"missing current state", func(s *Sensor) { s.CurrentState = nil }, true},
+		{"missing last activity", func(s *Sensor) { s.LastActivity = nil }, true},
+		{"missing registered at", func(s *Sensor) { s.RegisteredAt = nil }, true},
+		{"missing description", func(s *Sensor) { s.Description = nil }, true},
+		{"invalid sensor type", func(s *Sensor) { s.Type = swag.String("invalid-type") }, true},
+		{"missing ID", func(s *Sensor) { s.ID = nil }, true},
+		{"ID less than minimum", func(s *Sensor) { s.ID = swag.Int64(0) }, true},
+	}
 
-	t.Run("missing serial number", func(t *testing.T) {
-		sensor := *validSensor
-		sensor.SerialNumber = nil
-		err := sensor.Validate(strfmt.Default)
-		if err == nil {
-			t.Errorf("expected error for missing serial number")
-		}
-	})
-
-	t.Run("invalid serial number format", func(t *testing.T) {
-		sensor := *validSensor
-		sensor.SerialNumber = swag.String("abcd")
-		err := sensor.Validate(strfmt.Default)
-		if err == nil {
-			t.Errorf("expected error for invalid serial number format")
-		}
-	})
-
-	t.Run("invalid sensor type", func(t *testing.T) {
-		sensor := *validSensor
-		sensor.Type = swag.String("invalid-type")
-		err := sensor.Validate(strfmt.Default)
-		if err == nil {
-			t.Errorf("expected error for invalid type enum")
-		}
-	})
-
-	t.Run("missing ID", func(t *testing.T) {
-		sensor := *validSensor
-		sensor.ID = nil
-		err := sensor.Validate(strfmt.Default)
-		if err == nil {
-			t.Errorf("expected error for missing ID")
-		}
-	})
-
-	t.Run("ID less than minimum", func(t *testing.T) {
-		sensor := *validSensor
-		sensor.ID = swag.Int64(0)
-		err := sensor.Validate(strfmt.Default)
-		if err == nil {
-			t.Errorf("expected error for ID < 1")
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sensor := *validSensor
+			tt.mutate(&sensor)
+			err := sensor.Validate(strfmt.Default)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("expected error: %v, got: %v", tt.wantErr, err)
+			}
+		})
+	}
 }
