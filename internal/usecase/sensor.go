@@ -16,9 +16,6 @@ func NewSensor(sr SensorRepository) *Sensor {
 	}
 }
 
-// RegisterSensor ; не очень понятно, зачем здесь тесты требуют проверять серийный номер и тип, не залезая
-//
-//	в repository, получается без копипасты никак
 func (s *Sensor) RegisterSensor(ctx context.Context, sensor *domain.Sensor) (*domain.Sensor, error) {
 	if len(sensor.SerialNumber) != 10 {
 		return nil, ErrWrongSensorSerialNumber
