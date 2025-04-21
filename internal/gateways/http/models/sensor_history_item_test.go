@@ -1,9 +1,10 @@
 package models
 
 import (
-	"github.com/go-openapi/strfmt"
 	"testing"
 	"time"
+
+	"github.com/go-openapi/strfmt"
 )
 
 func TestSensorHistoryItem_Validate(t *testing.T) {

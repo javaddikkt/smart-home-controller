@@ -1,9 +1,10 @@
 package models
 
 import (
+	"testing"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"testing"
 )
 
 func TestSensorToCreate_Validate(t *testing.T) {
