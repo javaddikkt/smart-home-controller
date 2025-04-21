@@ -31,6 +31,7 @@ func TestSensor_Validate(t *testing.T) {
 		{"missing serial number", func(s *Sensor) { s.SerialNumber = nil }, true},
 		{"invalid serial number format", func(s *Sensor) { s.SerialNumber = swag.String("abcd") }, true},
 		{"missing current state", func(s *Sensor) { s.CurrentState = nil }, true},
+		{"missing activity state", func(s *Sensor) { s.IsActive = nil }, true},
 		{"missing last activity", func(s *Sensor) { s.LastActivity = nil }, true},
 		{"missing registered at", func(s *Sensor) { s.RegisteredAt = nil }, true},
 		{"missing description", func(s *Sensor) { s.Description = nil }, true},
