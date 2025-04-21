@@ -104,6 +104,61 @@ func TestSensorRepository_SaveSensor(t *testing.T) {
 	})
 }
 
+func TestSensorRepository_SaveSensor_Validation(t *testing.T) {
+	repo := NewSensorRepository()
+
+	tests := []struct {
+		name      string
+		sensor    *domain.Sensor
+		wantError bool
+	}{
+		{
+			name: "valid sensor - ContactClosure",
+			sensor: &domain.Sensor{
+				ID: 1, SerialNumber: "1234567890", Type: domain.SensorTypeContactClosure,
+			},
+			wantError: false,
+		},
+		{
+			name: "valid sensor - ADC",
+			sensor: &domain.Sensor{
+				ID: 2, SerialNumber: "0987654321", Type: domain.SensorTypeADC,
+			},
+			wantError: false,
+		},
+		{
+			name: "invalid serial number (too short)",
+			sensor: &domain.Sensor{
+				ID: 3, SerialNumber: "short", Type: domain.SensorTypeContactClosure,
+			},
+			wantError: true,
+		},
+		{
+			name: "invalid sensor type",
+			sensor: &domain.Sensor{
+				ID: 4, SerialNumber: "1234567890", Type: "invalid-type",
+			},
+			wantError: true,
+		},
+		{
+			name: "invalid both serial and type",
+			sensor: &domain.Sensor{
+				ID: 5, SerialNumber: "bad", Type: "invalid-type",
+			},
+			wantError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.SaveSensor(context.Background(), tt.sensor)
+			if (err != nil) != tt.wantError {
+				t.Errorf("SaveSensor() error = %v, wantError %v", err, tt.wantError)
+			}
+		})
+	}
+}
+
 func TestSensorRepository_GetSensors(t *testing.T) {
 	t.Run("fail, ctx cancelled", func(t *testing.T) {
 		sr := NewSensorRepository()

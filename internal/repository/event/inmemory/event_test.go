@@ -192,3 +192,16 @@ func TestEventRepository_GetEventsInRangeBySensorID(t *testing.T) {
 		assert.Equal(t, events[2].Payload, got[1].Payload)
 	})
 }
+
+func FuzzSaveEvent(f *testing.F) {
+	repo := NewEventRepository()
+
+	f.Fuzz(func(_ *testing.T, ts, sensorID, payload int64) {
+		event := &domain.Event{
+			Timestamp: time.Unix(ts, 0),
+			SensorID:  sensorID,
+			Payload:   payload,
+		}
+		_ = repo.SaveEvent(context.Background(), event)
+	})
+}

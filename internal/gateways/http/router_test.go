@@ -638,6 +638,63 @@ func TestUsersSensorsRoutes(t *testing.T) {
 	})
 }
 
+func TestBindSensorToUser_Errors(t *testing.T) {
+	tests := []struct {
+		name        string
+		userID      string
+		body        string
+		wantStatus  int
+		contentType string
+	}{
+		{
+			name:        "invalid_user_id_format",
+			userID:      "abc",
+			body:        `{"sensor_id": 1}`,
+			wantStatus:  http.StatusUnprocessableEntity, // 422
+			contentType: "application/json",
+		},
+		{
+			name:        "negative_user_id",
+			userID:      "-1",
+			body:        `{"sensor_id": 1}`,
+			wantStatus:  http.StatusUnprocessableEntity, // 422
+			contentType: "application/json",
+		},
+		{
+			name:        "invalid_request_body_format",
+			userID:      "1",
+			body:        `{ invalid json }`,
+			wantStatus:  http.StatusBadRequest, // 400
+			contentType: "application/json",
+		},
+		{
+			name:        "invalid_sensor_id_data",
+			userID:      "1",
+			body:        `{"sensor_id": -5}`,
+			wantStatus:  http.StatusUnprocessableEntity, // 422
+			contentType: "application/json",
+		},
+		{
+			name:        "unsupported_content_type",
+			userID:      "1",
+			body:        `<SensorToUserBinding><SensorId>1</SensorId></SensorToUserBinding>`,
+			wantStatus:  http.StatusUnsupportedMediaType, // 415
+			contentType: "application/xml",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodPost, "/users/"+tt.userID+"/sensors", bytes.NewReader([]byte(tt.body)))
+			req.Header.Add("Content-Type", tt.contentType)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.wantStatus, w.Code, "wrong status code")
+		})
+	}
+}
+
 // Тесты /events
 func TestEventsRoutes(t *testing.T) {
 	t.Run("POST_events", func(t *testing.T) {
@@ -780,5 +837,39 @@ func TestGetSensorHistory(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "Ожидалось 422 при некорректном end_date")
+	})
+}
+
+func FuzzPostEndpoints(f *testing.F) {
+	validBodies := []string{
+		`{"sensor_serial_number":"1234567890","payload":10}`,
+		`{"serial_number":"1234567890","type":"cc","description":"test","is_active":true}`,
+	}
+	for _, body := range validBodies {
+		f.Add("/events", body)
+		f.Add("/sensors", body)
+	}
+
+	f.Fuzz(func(t *testing.T, path, body string) {
+		if path != "/events" && path != "/sensors" {
+			return
+		}
+
+		w := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, path, bytes.NewReader([]byte(body)))
+		if err != nil {
+			t.Fatalf("failed to create request: %v", err)
+		}
+		req.Header.Add("Content-Type", "application/json")
+		router.ServeHTTP(w, req)
+
+		acceptableStatus := []int{
+			http.StatusCreated,             // 201
+			http.StatusOK,                  // 200
+			http.StatusUnprocessableEntity, // 422
+			http.StatusBadRequest,          // 400
+			http.StatusInternalServerError, // 500
+		}
+		assert.Contains(t, acceptableStatus, w.Code, "unexpected status code")
 	})
 }
