@@ -2,8 +2,9 @@ package postgres
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"homework/internal/domain"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SensorRepository struct {

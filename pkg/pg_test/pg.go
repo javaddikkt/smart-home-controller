@@ -10,6 +10,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -32,7 +35,7 @@ type TestDatabase struct {
 }
 
 func SetupTestDatabase() *TestDatabase {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	container, dbInstance, dbAddr, err := createContainer(ctx)
 	if err != nil {
 		log.Fatal("failed to setup test", err)
@@ -69,10 +72,18 @@ func createContainer(ctx context.Context) (testcontainers.Container, *pgxpool.Po
 
 	req := testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "postgres:16.2-alpine",
+			Image:        "postgres:17.4-bookworm",
 			ExposedPorts: []string{port},
 			Env:          env,
-			WaitingFor:   wait.ForLog("database system is ready to accept connections"),
+			WaitingFor: wait.ForAll(
+				wait.ForLog("database system is ready to accept connections"),
+				wait.ForListeningPort("5432/tcp"),
+				wait.ForExec([]string{"pg_isready", "-U", DbUser}),
+			).WithDeadline(2 * time.Minute),
+			HostConfigModifier: func(hc *container.HostConfig) {
+				hc.AutoRemove = true
+				hc.NetworkMode = network.NetworkBridge
+			},
 		},
 		Started: true,
 	}
@@ -100,6 +111,12 @@ func createContainer(ctx context.Context) (testcontainers.Container, *pgxpool.Po
 	db, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return container, db, dbAddr, fmt.Errorf("failed to establish database connection: %w", err)
+	}
+
+	if err := db.Ping(ctx); err == nil {
+		log.Println("db ping success")
+	} else {
+		log.Println("db ping failed: ", err)
 	}
 
 	return container, db, dbAddr, nil

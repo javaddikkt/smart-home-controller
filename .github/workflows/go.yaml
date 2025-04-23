@@ -9,14 +9,17 @@ on:
 jobs:
   build:
     runs-on: edu-self-hosted
-    timeout-minutes: 10
-    container:
-      image: golang:1.23-bookworm
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fix git ownership
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
 
       - name: Build
         run: |
@@ -34,6 +37,8 @@ jobs:
           go list ./... | grep -vE '(test|scripts|cmd|mock|gen)' | xargs -I{} go test -fuzz=Fuzz -fuzztime=10s {}
 
       - name: Test
+        env:
+          CGO_ENABLED: 1
         run: |
           go test -v -race -coverprofile=./cover.out -covermode=atomic -coverpkg=$(go list ./... | grep -vE '(test|scripts|cmd|mock|gen)' | tr '\n' ',') ./...
 
