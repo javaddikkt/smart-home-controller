@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"homework/internal/gateways/http/types"
 	"homework/internal/usecase"
+	"homework/pkg/pg_test"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,16 +15,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	eventRepository "homework/internal/repository/event/inmemory"
-	sensorRepository "homework/internal/repository/sensor/inmemory"
-	userRepository "homework/internal/repository/user/inmemory"
+	eventRepository "homework/internal/repository/event/postgres"
+	sensorRepository "homework/internal/repository/sensor/postgres"
+	userRepository "homework/internal/repository/user/postgres"
 )
 
 var (
-	er  = eventRepository.NewEventRepository()
-	sr  = sensorRepository.NewSensorRepository()
-	ur  = userRepository.NewUserRepository()
-	sor = userRepository.NewSensorOwnerRepository()
+	er  = &eventRepository.EventRepository{}
+	sr  = &sensorRepository.SensorRepository{}
+	ur  = &userRepository.UserRepository{}
+	sor = &userRepository.SensorOwnerRepository{}
 )
 
 var useCases = types.UseCases{
@@ -35,6 +36,14 @@ var useCases = types.UseCases{
 var router = gin.Default()
 
 func init() {
+	testDB := pg_test.SetupTestDatabase()
+	testDbInstance := testDB.DbInstance
+
+	*er = *eventRepository.NewEventRepository(testDbInstance)
+	*sr = *sensorRepository.NewSensorRepository(testDbInstance)
+	*ur = *userRepository.NewUserRepository(testDbInstance)
+	*sor = *userRepository.NewSensorOwnerRepository(testDbInstance)
+
 	setupRouter(router, useCases, NewWebSocketHandler(useCases))
 }
 
