@@ -24,9 +24,6 @@ func (r *UserRepository) SaveUser(ctx context.Context, user *domain.User) error 
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if user == nil {
-		return fmt.Errorf("user is nil")
-	}
 
 	const sql = `
         INSERT INTO users (name)

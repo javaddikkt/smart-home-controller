@@ -24,9 +24,6 @@ func (r *SensorRepository) SaveSensor(ctx context.Context, sensor *domain.Sensor
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if sensor == nil {
-		return fmt.Errorf("sensor is nil")
-	}
 
 	const sql = `
 		INSERT INTO sensors (
@@ -70,10 +67,7 @@ func (r *SensorRepository) GetSensors(ctx context.Context) ([]domain.Sensor, err
 		ORDER BY id
 	`
 
-	rows, err := r.pool.Query(ctx, sql)
-	if err != nil {
-		return nil, err
-	}
+	rows, _ := r.pool.Query(ctx, sql)
 	defer rows.Close()
 
 	var sensors []domain.Sensor

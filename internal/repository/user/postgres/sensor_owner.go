@@ -40,10 +40,7 @@ func (r *SensorOwnerRepository) GetSensorsByUserID(ctx context.Context, userID i
          ORDER BY sensor_id
     `
 
-	rows, err := r.pool.Query(ctx, sqlQuery, userID)
-	if err != nil {
-		return nil, err
-	}
+	rows, _ := r.pool.Query(ctx, sqlQuery, userID)
 	defer rows.Close()
 
 	var owners []domain.SensorOwner

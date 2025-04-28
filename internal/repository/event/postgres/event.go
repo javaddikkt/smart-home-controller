@@ -86,10 +86,7 @@ func (r *EventRepository) GetEventsInRangeBySensorID(ctx context.Context, id int
         ORDER BY "timestamp"
     `
 
-	rows, err := r.pool.Query(ctx, sqlQuery, id, from, to)
-	if err != nil {
-		return nil, err
-	}
+	rows, _ := r.pool.Query(ctx, sqlQuery, id, from, to)
 	defer rows.Close()
 
 	var result []*domain.Event
@@ -99,9 +96,6 @@ func (r *EventRepository) GetEventsInRangeBySensorID(ctx context.Context, id int
 			return nil, err
 		}
 		result = append(result, &e)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
 	}
 
 	return result, nil
