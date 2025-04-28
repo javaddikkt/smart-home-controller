@@ -69,3 +69,23 @@ func TestUserRepository_SaveUser(t *testing.T) {
 		wg.Wait()
 	})
 }
+
+func TestUserRepository_GetUserByID(t *testing.T) {
+	repo := NewUserRepository()
+
+	existing := &domain.User{ID: 1, Name: "Katrin"}
+	repo.users[existing.ID] = existing
+
+	t.Run("existing user", func(t *testing.T) {
+		user, err := repo.GetUserByID(context.Background(), existing.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, existing, user)
+	})
+
+	t.Run("non-existing user", func(t *testing.T) {
+		missingID := int64(10)
+		user, err := repo.GetUserByID(context.Background(), missingID)
+		assert.Nil(t, user)
+		assert.EqualError(t, err, fmt.Sprintf("user %d not found", missingID))
+	})
+}
