@@ -43,11 +43,6 @@ func (r *EventRepository) SaveEvent(ctx context.Context, event *domain.Event) er
 }
 
 func (r *EventRepository) insertEvent(events []*domain.Event, event *domain.Event) []*domain.Event {
-	//if len(events) == 0 {
-	//	events = []*domain.Event{}
-	//	events = append(events, event)
-	//	return events
-	//}
 	ind := sort.Search(len(events), func(i int) bool {
 		return !(events)[i].Timestamp.Before(event.Timestamp)
 	})
