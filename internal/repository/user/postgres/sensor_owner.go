@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"homework/internal/domain"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -16,61 +15,51 @@ func NewSensorOwnerRepository(pool *pgxpool.Pool) *SensorOwnerRepository {
 	return &SensorOwnerRepository{pool}
 }
 
-func (r *SensorOwnerRepository) SaveSensorOwner(ctx context.Context, owner *domain.SensorOwner) error {
+func (r *SensorOwnerRepository) SaveSensorOwner(ctx context.Context, owner domain.SensorOwner) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if owner == nil {
-		return fmt.Errorf("sensor owner is nil")
-	}
 
 	const sql = `
-    INSERT INTO sensor_owners (user_id, sensor_id)
+    INSERT INTO sensors_users (user_id, sensor_id)
     VALUES ($1, $2)
-    ON CONFLICT (user_id, sensor_id) DO NOTHING
   `
 	_, err := r.pool.Exec(ctx, sql, owner.UserID, owner.SensorID)
 	return err
 }
 
-func (r *SensorOwnerRepository) GetSensorsByUserID(ctx context.Context, userID int64) ([]domain.Sensor, error) {
+func (r *SensorOwnerRepository) GetSensorsByUserID(ctx context.Context, userID int64) ([]domain.SensorOwner, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
-	const sql = `
-    SELECT s.id, s.serial_number, s.type, s.current_state,
-           s.description, s.is_active, s.registered_at, s.last_activity
-      FROM sensors s
-      JOIN sensor_owners so ON so.sensor_id = s.id
-     WHERE so.user_id = $1
-     ORDER BY s.id
-  `
-	rows, err := r.pool.Query(ctx, sql, userID)
+	const sqlQuery = `
+        SELECT sensor_id
+          FROM sensors_users
+         WHERE user_id = $1
+         ORDER BY sensor_id
+    `
+
+	rows, err := r.pool.Query(ctx, sqlQuery, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var result []domain.Sensor
+	var owners []domain.SensorOwner
 	for rows.Next() {
-		var s domain.Sensor
-		if err := rows.Scan(
-			&s.ID,
-			&s.SerialNumber,
-			&s.Type,
-			&s.CurrentState,
-			&s.Description,
-			&s.IsActive,
-			&s.RegisteredAt,
-			&s.LastActivity,
-		); err != nil {
+		var sensorID int64
+		if err := rows.Scan(&sensorID); err != nil {
 			return nil, err
 		}
-		result = append(result, s)
+		owners = append(owners, domain.SensorOwner{
+			UserID:   userID,
+			SensorID: sensorID,
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	return result, nil
+
+	return owners, nil
 }

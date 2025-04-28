@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"homework/internal/domain"
 	"homework/internal/usecase"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -28,13 +29,21 @@ func (r *SensorRepository) SaveSensor(ctx context.Context, sensor *domain.Sensor
 	}
 
 	const sql = `
-    INSERT INTO sensors (
-      id, serial_number, type,
-      current_state, description,
-      is_active, registered_at, last_activity
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-    ON CONFLICT (serial_number) DO NOTHING
-  `
+		INSERT INTO sensors (
+		  id, serial_number, "type",
+		  current_state, description,
+		  is_active, registered_at, last_activity
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		ON CONFLICT (id) DO UPDATE SET
+			serial_number  = EXCLUDED.serial_number,
+			"type"         = EXCLUDED.type,
+			current_state  = EXCLUDED.current_state,
+			description    = EXCLUDED.description,
+			is_active      = EXCLUDED.is_active,
+			registered_at  = EXCLUDED.registered_at,
+			last_activity  = EXCLUDED.last_activity
+	`
+
 	_, err := r.pool.Exec(ctx,
 		sql,
 		sensor.ID,
@@ -43,7 +52,7 @@ func (r *SensorRepository) SaveSensor(ctx context.Context, sensor *domain.Sensor
 		sensor.CurrentState,
 		sensor.Description,
 		sensor.IsActive,
-		sensor.RegisteredAt,
+		time.Now(),
 		sensor.LastActivity,
 	)
 	return err
@@ -55,11 +64,12 @@ func (r *SensorRepository) GetSensors(ctx context.Context) ([]domain.Sensor, err
 	}
 
 	const sql = `
-    SELECT id, serial_number, type, current_state,
-           description, is_active, registered_at, last_activity
-      FROM sensors
-     ORDER BY id
-  `
+		SELECT id, serial_number, type, current_state,
+			   description, is_active, registered_at, last_activity
+		FROM sensors
+		ORDER BY id
+	`
+
 	rows, err := r.pool.Query(ctx, sql)
 	if err != nil {
 		return nil, err
@@ -95,11 +105,12 @@ func (r *SensorRepository) GetSensorByID(ctx context.Context, id int64) (*domain
 	}
 
 	const sql = `
-    SELECT id, serial_number, type, current_state,
-           description, is_active, registered_at, last_activity
-      FROM sensors
-     WHERE id = $1
-  `
+		SELECT id, serial_number, type, current_state,
+			   description, is_active, registered_at, last_activity
+		FROM sensors
+		WHERE id = $1
+    `
+
 	row := r.pool.QueryRow(ctx, sql, id)
 
 	var s domain.Sensor
@@ -127,11 +138,12 @@ func (r *SensorRepository) GetSensorBySerialNumber(ctx context.Context, sn strin
 	}
 
 	const sql = `
-    SELECT id, serial_number, type, current_state,
-           description, is_active, registered_at, last_activity
-      FROM sensors
-     WHERE serial_number = $1
-  `
+		SELECT id, serial_number, type, current_state,
+			   description, is_active, registered_at, last_activity
+		FROM sensors
+		WHERE serial_number = $1
+    `
+
 	row := r.pool.QueryRow(ctx, sql, sn)
 
 	var s domain.Sensor

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"homework/internal/domain"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var ErrEventNotFound = errors.New("event not found")
@@ -53,10 +54,10 @@ func (r *EventRepository) GetLastEventBySensorID(ctx context.Context, id int64) 
 	}
 
 	const sqlQuery = `
-        SELECT (timestamp, sensor_serial_number, sensor_id, payload)
+        SELECT "timestamp", sensor_serial_number, sensor_id, payload
         FROM events
         WHERE sensor_id = $1
-        ORDER BY timestamp DESC
+        ORDER BY "timestamp" DESC
         LIMIT 1
     `
 
@@ -79,10 +80,10 @@ func (r *EventRepository) GetEventsInRangeBySensorID(ctx context.Context, id int
 	}
 
 	const sqlQuery = `
-        SELECT (timestamp, sensor_serial_number, sensor_id, payload)
+        SELECT "timestamp", sensor_serial_number, sensor_id, payload
         FROM events
         WHERE sensor_id = $1 AND timestamp BETWEEN $2 AND $3 
-        ORDER BY timestamp
+        ORDER BY "timestamp"
     `
 
 	rows, err := r.pool.Query(ctx, sqlQuery, id, from, to)
