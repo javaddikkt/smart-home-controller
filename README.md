@@ -1,64 +1,74 @@
-# Домашнее задание №6: Контроллер умного дома
 
-Начиная с лекции 6 все домашние задания выполняются в рамках проекта: "Контроллер умного дома".
-Каждая следующая работа является продолжением предыдущей либо будет использоваться в этом проекте.
+# Smart Home Controller
 
-Контроллер умного дома это сервис, который предоставляет интерфейс для мониторинга состояния систем дома.  
-Он принимает информацию от датчиков, сохраняет ее, может отдать информацию по запросу.  
-Мы умышленно упростили некоторую логику этого сервиса, например функционал контроллера ограничен только работой с датчиками двух типов:
-- `ContactClosure` - сухие контакты (датчик протечки, переключатель на замыкание или размыкание).
-  Обычно события приходят при изменении состоянии датчика. Например, при открытии двери или окна.
-- `ADC` - аналоговый вход (термометры, датчики уровней). Обычно события приходят при изменении показаний датчика.
-  Например, при изменении показаний датчика температуры или влажности.
+**Smart Home Controller** — серверное приложение на языке Go для мониторинга и обработки данных от домашних датчиков. Предоставляет REST API и WebSocket-соединение для управления и получения информации о состоянии устройств умного дома в реальном времени.
 
-## Задание
-Детали задания указаны на edu
+## Стек технологий
 
-## Как работать в проекте
+- **Go**
+- **Gin, WebSocket**
+- **Swagger/OpenAPI**
+- **PostgreSQL**
+- **Docker, Docker Compose**
+- **Migrate**
+- **Make**
 
-* Для каждого задания создайте отдельную ветку.
-* После выполнения задания создайте Pull Request в ветку `main` проекта.
-* После создания Pull Request отправьте ссылку на PR в EDU
-* После того как задача будет принята примите Pull Request в ветку `main` проекта.
-* Для работы над следующим заданием сделайте новую ветку от ветки `main` проекта.
+## Структура проекта
 
-## Как подтянуть изменения в форк
+```
+smart-home-controller/
+├── api/                # OpenAPI спецификация
+├── cmd/server/         # Главный исполняемый файл
+├── internal/
+│   ├── gateways/       # Слой взаимодействия с HTTP, WS
+│   ├── repository/     # Слой доступа к данным
+│   ├── domain/         # Модели
+│   └── usecase/        # Бизнес-логика
+├── migrations/         # Миграции для БД
+├── pkg/pg_test/        # Инструменты для тестирования PostgreSQL
+├── .github/workflows/  # Конфигурация CI/CD
+├── docker-compose.yml  # Конфигурация Docker Compose
+├── Makefile            # Запуск миграций
+```
 
-Обратите внимание, для того чтобы скачать спецификацию и тесты для следующих заданий, нужно подтянуть изменения из основного репозитория.
-Для этого:
-1. Замержите в свой main всю накопленную работу в своём форке и переключитесь на обновлённый main локально
-2. Если не настроен upstream, то сделайте ```git remote add upstream git@github.com:central-university-dev/2025-go-course-lesson6-2025-spring-go-course-lesson6.git``` или ```git remote add upstream https://github.com/central-university-dev/2025-go-course-lesson6-2025-spring-go-course-lesson6.git```
-3. Обновите upstream: ```git fetch upstream``` или ```git fetch --all```
-4. Подтяните изменения из upstream и ребазируйтесь на них: ```git rebase upstream/main```
+## Запуск проекта
 
-## Подготовка окружения
+### Требования
 
-1. Установить docker ([windows](https://docs.docker.com/desktop/install/windows-install/), [Mac](https://docs.docker.com/desktop/install/mac-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/))
-    * Если установили не docker-desktop, а docker отдельно - необходимо установить [docker-compose](https://docs.docker.com/compose/install/)
-2. Установить [migrate](https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md)
-3. Базу данных можно развернуть с помощью docker-compose (файл в корне проекта). Для этого необходимо выполнить команду `docker-compose up -d`. После того, как она запустится, к ней можно подключаться - `postgres://postgres:postgres@127.0.0.1:5432/db`.
-4. Для миграции нужно выполнить команду `migrate -path=./migrations -database postgres://postgres:postgres@127.0.0.1:5432/db?sslmode=disable up`. Также к проекту приложен Makefile, с помощью которого тоже можно выполнить миграцию - `make migrate-up`.
+- [Go](https://golang.org/dl/) 1.16+
+- [Docker](https://www.docker.com/get-started), [Docker Compose](https://docs.docker.com/compose/install/)
 
-Если решили выполнить миграцию через Make (`make migrate-up`) на Windows - его нужно [установить](https://stackoverflow.com/questions/32127524/how-to-install-and-use-make-in-windows). В Mac и Linux установка не требуется.
+### Инструкция
 
-## Запуск приложения
+```bash
+git clone https://github.com/javaddikkt/smart-home-controller.git
+cd smart-home-controller
+docker-compose up -d
+make migrate-up
+export DATABASE_URL="postgres://postgres:postgres@127.0.0.1:5432/db?sslmode=disable"
+go run ./cmd/server
+```
 
-Для запуска приложения требуется [переменная окружения](https://gobyexample.com/environment-variables) `DATABASE_URL` - URL подключения к базе (`postgres://postgres:postgres@127.0.0.1:5432/db?sslmode=disable`).
+Приложение доступно по адресу: `http://localhost:8080`
 
-## Запуск тестов
+## API
 
-Тесты в процессе запуска используют docker. Убедитесь, что он у вас запущен.
+Полная спецификация лежит в [`api/swagger.yaml`](api/swagger.yaml).  
+Пример запроса:
 
-1. зайти в терминале в каталог с домашним заданием
-2. вызвать ```go test -v ./... -race```
+```http
+POST /events
+Content-Type: application/json
+{
+    "sensor_serial_number": "1234567890",
+    "payload": 10
+}
+```
 
-## Запуск линтера
+## Тестирование
 
-Для линтинга используется [golangci-lint](https://golangci-lint.run/).
-Инструкцию по установке можно найти [тут](https://golangci-lint.run/usage/install/).
+Запуск тестов:
 
-Для запуска линтера нужно выполнить команду `golangci-lint run` в корне проекта.
-Большую часть ошибок линтера можно поправить с использованием флага `--fix`.
-
-## Обратите внимание
-От того как вы выполните это задание зависит и то, как ваш проект будет продвигаться в дальнейшем. Если вы в чем-то сомневаетесь, то не стесняйтесь задавать вопросы.
+```bash
+go test -v ./... -race
+```
